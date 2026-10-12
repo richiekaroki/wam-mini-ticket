@@ -68,6 +68,10 @@ temp/
 # ==================== EDITOR EXTENSIONS ====================
 !.vscode/extensions.json
 
+# ==================== EYES ONLY ====================
+/docs/Lodwar_Ticket_Tracker_UI_Recommendations.docx
+/docs/how_it_works.txt
+
 # ==================== AGENT / SKILL TOOLING ====================
 .agents/
 .impeccable/

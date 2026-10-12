@@ -1,86 +1,73 @@
 # wam-mini-ticket
 
-Assessment project: Full-stack ticket tracking system (NestJS + React)
+Mini Ticket Tracker — the take-home assignment for the Mid-Level Full-Stack Developer role at Lodwar Services.
 
-## Overview
-
-Backend (NestJS 11) + Frontend (React 19) application for creating, listing, and updating tickets. Built as a take-home assessment.
+A small REST API, a PostgreSQL database, and a single-page UI for creating, listing, filtering and updating support tickets.
 
 ## Tech Stack
 
-- **Backend:** NestJS 11, TypeScript, TypeORM, PostgreSQL
+- **Backend:** NestJS 11, TypeScript, TypeORM, PostgreSQL (Neon), Jest + Supertest
 - **Frontend:** React 19, TypeScript, Vite
 
-## Core Features
+## Features
 
-- Create tickets (title required, description/priority/status optional)
+- Create a ticket (title required; description, priority and status optional)
 - List tickets with status filtering and pagination
-- Update ticket status via PATCH
-- Status statistics summary
+- Update a ticket's status or priority
+- Counts of tickets grouped by status
 
 ## Project Structure
 
 ```
-backend/src/          # NestJS module, controller, service, entity, DTOs
-frontend/src/         # React components (CreateTicket, TicketList, TicketStats), services, styles
+backend/src/          NestJS module, controller, service, entity and DTOs
+backend/src/tickets/  Integration tests for the ticket API
+frontend/src/         React components, API service layer and styles
 ```
 
-## Quick Start
+## Setup & Run
 
 ### Prerequisites
 
-- Node.js 20+
-- npm or pnpm
+- Node.js 20+ (22 recommended)
+- A PostgreSQL database — [Neon](https://neon.tech) free tier or local Postgres
 
-### Backend Setup
+### 1. Backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env    # edit DATABASE_URL with your Neon PostgreSQL connection string
-npm run build           # compile TypeScript
-npm run start:dev       # runs at http://localhost:3000
+cp .env.example .env      # Windows: Copy-Item .env.example .env
+# edit .env and set DATABASE_URL to your Postgres connection string
+npm run build
+npm run start:dev         # http://localhost:3000
 ```
 
-### Frontend Setup
+### 2. Frontend
 
 ```bash
 cd frontend
 npm install
-npm run dev             # runs at http://localhost:5173
+npm run dev               # http://localhost:5173
 ```
+
+The frontend calls `http://localhost:3000`, so the backend must be running for the UI to work. CORS is enabled for the Vite dev server origin.
 
 ### Environment Variables
 
-See `backend/.env.example` for required variables:
+See `backend/.env.example`:
 
 ```
 PORT=3000
-DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=verify-full&channel_binding=require
 ```
 
-**Important:** The `.env.example` originally contained real Neon credentials. These were replaced with placeholder markers (`REPLACE_ME`) for safe sharing. Replace with your actual connection string before running.
+`.env` is gitignored and `.env.example` contains placeholders only — no real credentials are committed.
 
-### Windows (PowerShell) Quick Start
-
-```powershell
-# Backend
-cd backend
-npm install
-Copy-Item .env.example .env
-# Edit .env with your DATABASE_URL
-npm run build
-npm run start:dev
-
-# Frontend (separate terminal)
-cd frontend
-npm install
-npm run dev
-```
+> **Schema:** in development TypeORM runs with `synchronize: true`, so the `ticket` table is created automatically on first boot. See "Decisions & Tradeoffs" below.
 
 ## API Reference
 
-### Create Ticket
+### Create ticket
 
 ```http
 POST /tickets
@@ -94,27 +81,27 @@ Content-Type: application/json
 }
 ```
 
-**Response:** 201 Created - ticket object
+**201 Created** — the ticket object.
 
-**Errors:**
-- 400 Bad Request - title is required, max 255 chars, must not be blank
-- 422 Validation failed - invalid priority or status values
+**Errors**
 
-### List Tickets
+- `400` — title missing, blank or longer than 255 chars; description longer than 1000 chars; unknown `status`/`priority` values; unknown fields (`forbidNonWhitelisted`).
+
+### List tickets
 
 ```http
 GET /tickets?status=open&page=1&limit=10
 ```
 
-**Query Parameters:**
-- `status`: filter by 'open' | 'in_progress' | 'closed' (optional)
-- `page`: page number, default 1
-- `limit`: items per page, max 100, default 10
+**Query parameters**
 
-**Response:**
+- `status` — `open` | `in_progress` | `closed` (optional)
+- `page` — integer ≥ 1, default `1`
+- `limit` — integer 1–100, default `10`
+
 ```json
 {
-  "items": [{ id, title, status, priority, createdAt }],
+  "items": [{ "id": 1, "title": "...", "status": "open", "priority": "medium", "createdAt": "..." }],
   "page": 1,
   "limit": 10,
   "total": 5,
@@ -122,76 +109,63 @@ GET /tickets?status=open&page=1&limit=10
 }
 ```
 
-### Update Ticket
+**Errors:** `400` for an invalid `status`, non-numeric or out-of-range `page`/`limit`.
+
+### Update ticket
 
 ```http
 PATCH /tickets/:id
 Content-Type: application/json
 
-{
-  "status": "in_progress"
-}
+{ "status": "in_progress" }
 ```
 
-**Errors:**
-- 404 Not Found - ticket ID does not exist
-- 400 Bad Request - at least one field must be provided for update
+Accepts any combination of `title`, `description`, `status`, `priority`.
 
-### Get Stats
+**Errors:** `404` if the id does not exist, `400` if the payload is empty or invalid.
+
+### Stats
 
 ```http
 GET /tickets/stats
 ```
 
-**Response:**
 ```json
-{
-  "open": 3,
-  "in_progress": 1,
-  "closed": 2
-}
+{ "open": 3, "in_progress": 1, "closed": 2 }
 ```
 
 ## Testing
 
-### Backend Tests
-
 ```bash
 cd backend
 npm test
 ```
 
-**Test Coverage:** Integration tests cover ticket CRUD, status filtering, pagination, and statistics.
+The suite contains **16 integration tests** that boot the real Nest application and exercise every endpoint over HTTP against a real Postgres database (create/validation, filtering, pagination, patching and stats). Set `DATABASE_URL` in `backend/.env` (or export it) before running — the tests truncate the `ticket` table between cases, so point them at a scratch database.
 
-**Test Command (PowerShell):**
+There are no frontend tests; see the tradeoffs below.
 
-```powershell
-cd backend
-$env:DATABASE_URL = "postgresql://USER:PASSWORD@HOST:5432/db_name"
-npm test
-```
+## Decisions & Tradeoffs
 
-### Frontend Tests
+**NestJS instead of bare Express.** The brief listed "Node.js/Express"; I read NestJS as an acceptable Node.js choice and used it because its modules, dependency injection and class-validator DTOs map directly onto the validation rules in the spec — it removed a lot of hand-rolled middleware I would otherwise have had to write and test.
 
-```bash
-cd frontend
-npm test
-```
+**`synchronize: true` in development.** There are no migrations, so TypeORM manages the schema from the entity at boot; this keeps "clone and run" working with zero setup, but it is not safe against production data and I would ship migrations (plus `synchronize: false`) as the very next step.
 
-## Database Credentials Security
+**Integration tests against a real database, not mocks.** They are slower and need a `DATABASE_URL`, but they exercise the actual SQL, the enum columns and the validation pipe end to end. For a four-hour brief that felt like better evidence than fast tests around a mocked repository.
 
-**⚠️ Important:** The `backend/.env.example` file originally contained real Neon PostgreSQL connection credentials. These were replaced with placeholder markers (`REPLACE_ME`) for safe sharing. 
+**Swapped `@nestjs/config` for `dotenv`.** The v12 release is ESM-only, which the CommonJS Jest runner cannot import; reading `process.env` after `dotenv.config()` is one line and keeps the toolchain boring.
 
-Before running the application:
+**Deliberately not built:** authentication, a DELETE endpoint, optimistic-concurrency handling, rate limiting, Swagger, frontend tests, and any sort of state library or router — a single `fetch` client and `useState` were enough for one page. With more time I would add migrations, a Vitest + Testing Library suite for the components, cursor-based pagination, optimistic updates for the status selector, and a CI workflow that runs lint, build and tests on every push.
 
-1. Review `backend/.env.example` - it now uses `REPLACE_ME` markers
-2. Create `backend/.env` with your actual Neon connection string
-3. **Never** commit real database credentials to version control
+**Query validation.** `page`, `limit` and `status` are validated by a DTO rather than coerced in the service, so bad input returns a `400` instead of leaking `NaN` into SQL.
 
-## Notes
+## Security Notes
 
-- Designed for assessment purposes
-- Out of scope: auth, notifications, attachments, real-time updates, deployment
-- Frontend uses React `useTransition` for smooth async state updates
-- Backend uses TypeORM with Neon PostgreSQL SSL configuration
-- Validation: DTOs use class-validator decorators with NestJS ValidationPipe
+- Postgres connections use `sslmode=verify-full`.
+- Input is validated at the boundary: DTOs use `class-validator` with `whitelist` and `forbidNonWhitelisted`.
+- SQL injection is covered by TypeORM's parameterized queries.
+- No authentication — every endpoint is open. That is a known MVP gap, not an oversight.
+
+## Out of Scope
+
+Auth, notifications, attachments, real-time updates, deployment.

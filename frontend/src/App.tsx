@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { CreateTicket } from './components/CreateTicket';
 import { TicketStats } from './components/TicketStats';
 import { TicketList } from './components/TicketList';
@@ -6,7 +6,11 @@ import { TicketList } from './components/TicketList';
 export default function App() {
   // Bumping this number tells the stats and the list to refetch.
   const [refreshKey, setRefreshKey] = useState(0);
-  const refresh = () => setRefreshKey((k) => k + 1);
+  const [isPending, startTransition] = useTransition();
+
+  const refresh = () => {
+    setRefreshKey((k) => k + 1);
+  };
 
   return (
     <div className="app">
@@ -18,6 +22,7 @@ export default function App() {
       <main className="container">
         <div className="layout">
           <section className="layout-stats">
+            {isPending && <p>Loading stats...</p>}
             <TicketStats refreshKey={refreshKey} />
           </section>
 

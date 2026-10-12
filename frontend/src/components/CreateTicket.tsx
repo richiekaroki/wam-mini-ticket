@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { createTicket } from '../services/ticket.service';
 import type { TicketFormValues } from '../services/ticket-types';
@@ -18,6 +18,8 @@ export function CreateTicket({ onSuccess }: CreateTicketProps) {
   const [form, setForm] = useState<TicketFormValues>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -38,6 +40,7 @@ export function CreateTicket({ onSuccess }: CreateTicketProps) {
         status: form.status,
       });
       setForm(EMPTY_FORM);
+      setRefreshKey((k) => k + 1);
       onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create ticket');
@@ -61,6 +64,7 @@ export function CreateTicket({ onSuccess }: CreateTicketProps) {
             required
             value={form.title}
             onChange={handleChange}
+            ref={inputRef}
           />
         </div>
 

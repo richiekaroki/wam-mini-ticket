@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { useDeferredValue, useTransition } from 'react';
 import { getTickets, updateTicket } from '../services/ticket.service';
 import type {
   Ticket,
@@ -39,6 +40,7 @@ export function TicketList({ refreshKey = 0, onTicketUpdate }: TicketListProps) 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('');
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     let cancelled = false;
@@ -52,9 +54,11 @@ export function TicketList({ refreshKey = 0, onTicketUpdate }: TicketListProps) 
           status: statusFilter || undefined,
         });
         if (!cancelled) {
-          setTickets(data.items);
-          setTotalPages(Math.max(1, data.totalPages));
-          setError(null);
+          startTransition(() => {
+            setTickets(data.items);
+            setTotalPages(Math.max(1, data.totalPages));
+            setError(null);
+          });
         }
       } catch (e) {
         if (!cancelled) {
@@ -84,6 +88,9 @@ export function TicketList({ refreshKey = 0, onTicketUpdate }: TicketListProps) 
       setError(e instanceof Error ? e.message : 'Failed to update ticket');
     }
   };
+
+  // Use deferred page value for better perceived performance
+  const deferredPage = useDeferredValue(page);
 
   return (
     <div>
@@ -177,7 +184,7 @@ export function TicketList({ refreshKey = 0, onTicketUpdate }: TicketListProps) 
           Previous
         </button>
         <span>
-          Page {page} of {totalPages}
+          Page {deferredPage} of {totalPages}
         </span>
         <button
           className="btn btn-secondary"

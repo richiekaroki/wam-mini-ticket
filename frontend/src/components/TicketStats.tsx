@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTransition } from 'react';
 import { getStats } from '../services/ticket.service';
 import type { TicketStatsData } from '../services/ticket-types';
 
@@ -15,6 +16,7 @@ const CARDS: { key: keyof TicketStatsData; label: string }[] = [
 export function TicketStats({ refreshKey = 0 }: TicketStatsProps) {
   const [stats, setStats] = useState<TicketStatsData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     let cancelled = false;
@@ -23,8 +25,10 @@ export function TicketStats({ refreshKey = 0 }: TicketStatsProps) {
       try {
         const data = await getStats();
         if (!cancelled) {
-          setStats(data);
-          setError(null);
+          startTransition(() => {
+            setStats(data);
+            setError(null);
+          });
         }
       } catch (e) {
         if (!cancelled) {

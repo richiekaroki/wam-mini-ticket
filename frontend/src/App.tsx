@@ -9,7 +9,9 @@ export default function App() {
   const [isPending, startTransition] = useTransition();
 
   const refresh = () => {
-    setRefreshKey((k) => k + 1);
+    // Bumping refreshKey is a non-urgent update; transition keeps the
+    // current list visible until the refetch settles.
+    startTransition(() => setRefreshKey((k) => k + 1));
   };
 
   return (

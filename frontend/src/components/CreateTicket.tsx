@@ -18,7 +18,6 @@ export function CreateTicket({ onSuccess }: CreateTicketProps) {
   const [form, setForm] = useState<TicketFormValues>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
@@ -40,7 +39,6 @@ export function CreateTicket({ onSuccess }: CreateTicketProps) {
         status: form.status,
       });
       setForm(EMPTY_FORM);
-      setRefreshKey((k) => k + 1);
       onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create ticket');

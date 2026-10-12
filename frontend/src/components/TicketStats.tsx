@@ -16,7 +16,7 @@ const CARDS: { key: keyof TicketStatsData; label: string }[] = [
 export function TicketStats({ refreshKey = 0 }: TicketStatsProps) {
   const [stats, setStats] = useState<TicketStatsData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     let cancelled = false;

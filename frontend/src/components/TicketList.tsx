@@ -40,7 +40,7 @@ export function TicketList({ refreshKey = 0, onTicketUpdate }: TicketListProps) 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('');
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     let cancelled = false;

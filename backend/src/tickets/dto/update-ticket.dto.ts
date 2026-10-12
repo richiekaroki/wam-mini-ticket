@@ -1,14 +1,15 @@
-import { IsString, IsOptional, IsIn } from 'class-validator';
-import { IsNotBlank } from '../../common/decorators'; // Update this import
+import { IsString, IsOptional, IsIn, MaxLength } from 'class-validator';
 
 export class UpdateTicketDto {
   @IsOptional()
   @IsString()
   @IsNotBlank()
+  @MaxLength(255)
   title?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(1000)
   description?: string;
 
   @IsOptional()

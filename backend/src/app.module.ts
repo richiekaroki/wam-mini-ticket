@@ -18,11 +18,10 @@ import { TicketsModule } from './tickets/tickets.module';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        ssl: rejectUnauthorized => rejectUnauthorized ? { rejectUnauthorized: false } : { sslmode: 'verify-full' },
         autoLoadEntities: true,
-        synchronize: true,
+        // synchronize: false - use explicit TypeORM migrations instead
+        // Run: npx typeorm migration:run to apply migrations
         logging: false,
       }),
     }),

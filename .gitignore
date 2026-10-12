@@ -69,7 +69,7 @@ temp/
 !.vscode/extensions.json
 
 # ==================== EYES ONLY ====================
-/docs
+/docs          # Private design specs & assessments - kept local only
 
 # ==================== AGENT / SKILL TOOLING ====================
 .agents/

@@ -69,7 +69,8 @@ temp/
 !.vscode/extensions.json
 
 # ==================== EYES ONLY ====================
-/docs          # Private design specs & assessments - kept local only
+/docs/how_it_works.txt
+/docs/Lodwar_Ticket_Tracker_UI_Recommendations.docx
 
 # ==================== AGENT / SKILL TOOLING ====================
 .agents/

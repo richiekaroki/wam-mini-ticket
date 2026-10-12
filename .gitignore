@@ -68,6 +68,9 @@ temp/
 # ==================== EDITOR EXTENSIONS ====================
 !.vscode/extensions.json
 
+# ==================== EYES ONLY ====================
+/docs
+
 # ==================== AGENT / SKILL TOOLING ====================
 .agents/
 .impeccable/

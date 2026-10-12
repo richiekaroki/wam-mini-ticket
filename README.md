@@ -49,5 +49,4 @@ DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/db_name npm test
 
 ## Notes
 
-- Private documentation (`docs/` folder) is kept local — not committed to this repo
 - Designed for assessment purposes; out of scope: auth, notifications, attachments, real-time updates, deployment

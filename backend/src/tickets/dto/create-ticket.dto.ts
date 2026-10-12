@@ -2,7 +2,6 @@ import { IsString, IsOptional, IsIn, MaxLength } from 'class-validator';
 
 export class CreateTicketDto {
   @IsString()
-  @IsNotBlank()
   @MaxLength(255)
   title: string;
 

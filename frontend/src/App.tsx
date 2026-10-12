@@ -47,7 +47,7 @@ export default function App() {
               <path d="M14 7v11" strokeDasharray="2 2.5" />
             </svg>
             <span className="brand-name">Mini Ticket Tracker</span>
-            <span className="brand-sub">Lodwar Services</span>
+            <span className="brand-sub">Wam</span>
           </div>
 
           <button

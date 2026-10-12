@@ -7,7 +7,7 @@ A small REST API, a PostgreSQL database, and a single-page UI for creating, list
 ## Tech Stack
 
 - **Backend:** NestJS 11, TypeScript, TypeORM, PostgreSQL (Neon), Jest + Supertest
-- **Frontend:** React 19, TypeScript, Vite
+- **Frontend:** React 19, TypeScript, Vite, hand-rolled CSS design system (no UI framework) — dark workspace theme with an amber accent, Archivo + IBM Plex Mono. See [`frontend/DESIGN.md`](frontend/DESIGN.md).
 
 ## Features
 
@@ -22,6 +22,8 @@ A small REST API, a PostgreSQL database, and a single-page UI for creating, list
 backend/src/          NestJS module, controller, service, entity and DTOs
 backend/src/tickets/  Integration tests for the ticket API
 frontend/src/         React components, API service layer and styles
+frontend/DESIGN.md    Design system: palette, typography, layout, states, a11y
+design/               Screenshots of the verified UI (desktop + mobile)
 ```
 
 ## Setup & Run
@@ -143,7 +145,7 @@ npm test
 
 The suite contains **16 integration tests** that boot the real Nest application and exercise every endpoint over HTTP against a real Postgres database (create/validation, filtering, pagination, patching and stats). Set `DATABASE_URL` in `backend/.env` (or export it) before running — the tests truncate the `ticket` table between cases, so point them at a scratch database.
 
-There are no frontend tests; see the tradeoffs below.
+There are no frontend unit tests; the UI was instead verified in a real browser against the running API (create + validation + success feedback, status updates and live summary counts, filtering with the empty state, pagination, simulated API failures with retry, keyboard tab order and focus rings, and responsive layouts at desktop and mobile widths). Screenshots of the verified UI are in `design/`; the design system itself is documented in `frontend/DESIGN.md`.
 
 ## Decisions & Tradeoffs
 

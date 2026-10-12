@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {
   Injectable,
   BadRequestException,
@@ -8,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { ListTicketsQueryDto } from './dto/list-tickets.query.dto';
 import { Ticket } from './ticket.entity';
 
 @Injectable()
@@ -24,27 +24,28 @@ export class TicketsService {
     return this.repo.save(ticket);
   }
 
-  async findAll(statusFilter?: string, page?: string, limit?: string) {
-    const pageNum = Math.max(1, parseInt(page ?? '1', 10));
-    const limitNum = Math.min(Math.max(1, parseInt(limit ?? '10', 10)), 100);
+  async findAll(query: ListTicketsQueryDto) {
+    // Input is already validated/converted by ListTicketsQueryDto
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
 
-    const where: FindOptionsWhere<Ticket> = statusFilter
-      ? { status: statusFilter as 'open' | 'in_progress' | 'closed' }
+    const where: FindOptionsWhere<Ticket> = query.status
+      ? { status: query.status }
       : {};
 
     const [items, total] = await this.repo.findAndCount({
       where,
-      take: limitNum,
-      skip: (pageNum - 1) * limitNum,
+      take: limit,
+      skip: (page - 1) * limit,
       order: { createdAt: 'DESC' },
     });
 
     return {
       items,
-      page: pageNum,
-      limit: limitNum,
+      page,
+      limit,
       total,
-      totalPages: Math.ceil(total / limitNum),
+      totalPages: Math.ceil(total / limit),
     };
   }
 

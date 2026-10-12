@@ -7,49 +7,36 @@ import {
   Param,
   Query,
   ParseIntPipe,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { ListTicketsQueryDto } from './dto/list-tickets.query.dto';
 
 @Controller('tickets')
 export class TicketsController {
   constructor(private service: TicketsService) {}
 
+  // Input validation is handled by the global ValidationPipe configured in
+  // main.ts (and in the integration tests), so it is not repeated here.
   @Post()
-  @UsePipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  )
   create(@Body() dto: CreateTicketDto) {
     return this.service.create(dto);
   }
 
   @Get()
-  findAll(
-    @Query('status') status?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.service.findAll(status, page, limit);
+  findAll(@Query() query: ListTicketsQueryDto) {
+    return this.service.findAll(query);
   }
 
-  // Moved @Get('stats') above the parameterized route (:id) so it resolves correctly
+  // Declared before the parameterized routes so it never matches as an :id
   @Get('stats')
-  async getStats() {
+  getStats() {
     return this.service.getStats();
   }
 
   @Patch(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateTicketDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTicketDto) {
     return this.service.update(id, dto);
   }
 }

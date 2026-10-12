@@ -124,6 +124,20 @@ describe('Tickets API Integration Tests', () => {
       expect(body.page).toBe(2);
       expect(body.totalPages).toBe(3);
     });
+
+    it('should reject a non-numeric page and return 400', async () => {
+      await request(app.getHttpServer()).get('/tickets?page=abc').expect(400);
+    });
+
+    it('should reject an unknown status filter and return 400', async () => {
+      await request(app.getHttpServer())
+        .get('/tickets?status=bogus')
+        .expect(400);
+    });
+
+    it('should reject a limit above the 100 cap and return 400', async () => {
+      await request(app.getHttpServer()).get('/tickets?limit=500').expect(400);
+    });
   });
 
   describe('PATCH /tickets/:id', () => {

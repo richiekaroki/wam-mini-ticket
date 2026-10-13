@@ -10,16 +10,24 @@ loadEnv({ quiet: true });
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useFactory: () => ({
-        type: 'postgres',
-        url: process.env.DATABASE_URL,
-        ssl: true,
-        autoLoadEntities: true,
-        // DEV ONLY: sync schema from entities so a fresh checkout runs without
-        // migrations; production would use `synchronize: false` + migrations.
-        synchronize: true,
-        logging: false,
-      }),
+      useFactory: () => {
+        const url = process.env.DATABASE_URL;
+        if (!url) {
+          throw new Error(
+            'DATABASE_URL is not set. Copy backend/.env.example to backend/.env and fill in your connection string.',
+          );
+        }
+        return {
+          type: 'postgres' as const,
+          url,
+          ssl: true,
+          autoLoadEntities: true,
+          // DEV ONLY: sync schema from entities so a fresh checkout runs without
+          // migrations; production would use `synchronize: false` + migrations.
+          synchronize: true,
+          logging: false,
+        };
+      },
     }),
     TicketsModule,
   ],

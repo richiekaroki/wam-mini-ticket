@@ -52,7 +52,7 @@ npm install
 npm run dev               # http://localhost:5173
 ```
 
-The frontend calls `http://localhost:3000`, so the backend must be running for the UI to work. CORS is enabled for the Vite dev server origin.
+The frontend calls `http://localhost:3000`, so the backend must be running for the UI to work. CORS allows the origin in `CORS_ORIGIN` (default `http://localhost:5173`).
 
 ### Environment Variables
 
@@ -60,6 +60,7 @@ See `backend/.env.example`:
 
 ```
 PORT=3000
+CORS_ORIGIN=http://localhost:5173
 DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=verify-full&channel_binding=require
 ```
 
@@ -166,6 +167,7 @@ There are no frontend unit tests; the UI was instead verified in a real browser 
 - Postgres connections use `sslmode=verify-full`.
 - Input is validated at the boundary: DTOs use `class-validator` with `whitelist` and `forbidNonWhitelisted`.
 - SQL injection is covered by TypeORM's parameterized queries.
+- Unexpected errors are logged server-side with full stack traces; clients only ever see a generic `500`.
 - No authentication — every endpoint is open. That is a known MVP gap, not an oversight.
 
 ## Out of Scope

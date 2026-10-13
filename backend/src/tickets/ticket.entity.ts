@@ -4,6 +4,13 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
+import {
+  DEFAULT_TICKET_PRIORITY,
+  DEFAULT_TICKET_STATUS,
+  TICKET_PRIORITIES,
+  TICKET_STATUSES,
+} from './ticket-vocabulary';
+import type { TicketPriority, TicketStatus } from './ticket-vocabulary';
 
 @Entity()
 export class Ticket {
@@ -13,22 +20,24 @@ export class Ticket {
   @Column()
   title!: string;
 
-  @Column({ nullable: true })
-  description?: string;
+  // Explicit varchar: the `string | null` union reflects as `Object`,
+  // which TypeORM cannot map to a column type on its own.
+  @Column({ type: 'varchar', nullable: true })
+  description?: string | null;
 
   @Column({
     type: 'enum',
-    enum: ['open', 'in_progress', 'closed'],
-    default: 'open',
+    enum: [...TICKET_STATUSES],
+    default: DEFAULT_TICKET_STATUS,
   })
-  status!: 'open' | 'in_progress' | 'closed';
+  status!: TicketStatus;
 
   @Column({
     type: 'enum',
-    enum: ['low', 'medium', 'high'],
-    default: 'medium',
+    enum: [...TICKET_PRIORITIES],
+    default: DEFAULT_TICKET_PRIORITY,
   })
-  priority!: 'low' | 'medium' | 'high';
+  priority!: TicketPriority;
 
   @CreateDateColumn()
   createdAt!: Date;

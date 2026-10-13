@@ -1,5 +1,7 @@
 import { IsString, IsOptional, IsIn, MaxLength } from 'class-validator';
 import { IsNotBlank } from '../../common/decorators';
+import { TICKET_PRIORITIES, TICKET_STATUSES } from '../ticket-vocabulary';
+import type { TicketPriority, TicketStatus } from '../ticket-vocabulary';
 
 export class CreateTicketDto {
   @IsString()
@@ -13,10 +15,10 @@ export class CreateTicketDto {
   description?: string;
 
   @IsOptional()
-  @IsIn(['open', 'in_progress', 'closed'])
-  status?: 'open' | 'in_progress' | 'closed';
+  @IsIn([...TICKET_STATUSES])
+  status?: TicketStatus;
 
   @IsOptional()
-  @IsIn(['low', 'medium', 'high'])
-  priority?: 'low' | 'medium' | 'high';
+  @IsIn([...TICKET_PRIORITIES])
+  priority?: TicketPriority;
 }

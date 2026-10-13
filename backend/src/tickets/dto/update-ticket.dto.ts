@@ -1,8 +1,21 @@
-import { IsString, IsOptional, IsIn, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsIn,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
 import { IsNotBlank } from '../../common/decorators';
+import { TICKET_PRIORITIES, TICKET_STATUSES } from '../ticket-vocabulary';
+import type { TicketPriority, TicketStatus } from '../ticket-vocabulary';
 
+/**
+ * `description` keeps @IsOptional so an explicit null clears the nullable
+ * column; the other fields are optional only when *omitted* - sending null
+ * there is a 400, not a crash.
+ */
 export class UpdateTicketDto {
-  @IsOptional()
+  @ValidateIf((_object, value) => value !== undefined)
   @IsString()
   @IsNotBlank()
   @MaxLength(255)
@@ -13,11 +26,11 @@ export class UpdateTicketDto {
   @MaxLength(1000)
   description?: string;
 
-  @IsOptional()
-  @IsIn(['open', 'in_progress', 'closed'])
-  status?: 'open' | 'in_progress' | 'closed';
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsIn([...TICKET_STATUSES])
+  status?: TicketStatus;
 
-  @IsOptional()
-  @IsIn(['low', 'medium', 'high'])
-  priority?: 'low' | 'medium' | 'high';
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsIn([...TICKET_PRIORITIES])
+  priority?: TicketPriority;
 }

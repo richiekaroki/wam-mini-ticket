@@ -9,6 +9,11 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { ListTicketsQueryDto } from './dto/list-tickets.query.dto';
 import { Ticket } from './ticket.entity';
+import { buildTicketPatch } from './ticket-patch';
+import {
+  DEFAULT_TICKET_PRIORITY,
+  DEFAULT_TICKET_STATUS,
+} from './ticket-vocabulary';
 
 @Injectable()
 export class TicketsService {
@@ -18,14 +23,13 @@ export class TicketsService {
     const ticket = this.repo.create({
       title: dto.title.trim(),
       description: dto.description?.trim(),
-      status: dto.status ?? 'open',
-      priority: dto.priority ?? 'medium',
+      status: dto.status ?? DEFAULT_TICKET_STATUS,
+      priority: dto.priority ?? DEFAULT_TICKET_PRIORITY,
     });
     return this.repo.save(ticket);
   }
 
   async findAll(query: ListTicketsQueryDto) {
-    // Input is already validated/converted by ListTicketsQueryDto
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
 
@@ -60,32 +64,14 @@ export class TicketsService {
   async update(id: number, dto: UpdateTicketDto) {
     const ticket = await this.findOne(id);
 
-    // Reject empty update payloads - at least one field must be provided
-    const hasUpdates =
-      dto.title !== undefined ||
-      dto.description !== undefined ||
-      dto.status !== undefined ||
-      dto.priority !== undefined;
-
-    if (!hasUpdates) {
+    const patch = buildTicketPatch(dto);
+    if (Object.keys(patch).length === 0) {
       throw new BadRequestException(
         'At least one field must be provided for update',
       );
     }
 
-    if (dto.title !== undefined) {
-      ticket.title = dto.title.trim();
-    }
-    if (dto.description !== undefined) {
-      ticket.description = dto.description.trim();
-    }
-    if (dto.status !== undefined) {
-      ticket.status = dto.status;
-    }
-    if (dto.priority !== undefined) {
-      ticket.priority = dto.priority;
-    }
-
+    Object.assign(ticket, patch);
     return this.repo.save(ticket);
   }
 

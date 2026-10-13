@@ -1,17 +1,16 @@
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
-
-export type TicketStatus = 'open' | 'in_progress' | 'closed';
+import { TICKET_STATUSES } from '../ticket-vocabulary';
+import type { TicketStatus } from '../ticket-vocabulary';
 
 /**
- * Validated query string for GET /tickets.
  * Query params arrive as strings, so `@Type(() => Number)` converts page/limit
  * before validation - invalid input (e.g. ?page=abc) now yields a 400 instead
  * of a NaN being passed to the database.
  */
 export class ListTicketsQueryDto {
   @IsOptional()
-  @IsIn(['open', 'in_progress', 'closed'])
+  @IsIn([...TICKET_STATUSES])
   status?: TicketStatus;
 
   @IsOptional()

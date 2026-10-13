@@ -19,8 +19,8 @@ A small REST API, a PostgreSQL database, and a single-page UI for creating, list
 ## Project Structure
 
 ```
-backend/src/          NestJS module, controller, service, entity and DTOs
-backend/src/tickets/  Integration tests for the ticket API
+backend/src/          NestJS module, controller, service, entity, DTOs and tests
+backend/src/common/   Validation options and the global exception filter
 frontend/src/         React components, API service layer and styles
 frontend/DESIGN.md    Design system: palette, typography, layout, states, a11y
 design/               Screenshots of the verified UI (desktop + mobile)
@@ -122,9 +122,9 @@ Content-Type: application/json
 { "status": "in_progress" }
 ```
 
-Accepts any combination of `title`, `description`, `status`, `priority`.
+Accepts any combination of `title`, `description`, `status`, `priority`. Sending `"description": null` clears the description; the other fields reject `null` with a `400` (only omit them).
 
-**Errors:** `404` if the id does not exist, `400` if the payload is empty or invalid.
+**Errors:** `404` if the id does not exist, `400` if the payload is empty or invalid (including `null` for `title`, `status` or `priority`).
 
 ### Stats
 
@@ -143,7 +143,7 @@ cd backend
 npm test
 ```
 
-The suite contains **16 integration tests** that boot the real Nest application and exercise every endpoint over HTTP against a real Postgres database (create/validation, filtering, pagination, patching and stats). Set `DATABASE_URL` in `backend/.env` (or export it) before running — the tests truncate the `ticket` table between cases, so point them at a scratch database.
+The suite contains **19 integration tests** that boot the real Nest application and exercise every endpoint over HTTP against a real Postgres database (create/validation, filtering, pagination, patching and stats), plus a database-free unit spec for the PATCH merge logic (`ticket-patch.spec.ts`, run it with `npx jest ticket-patch`). Set `DATABASE_URL` in `backend/.env` (or export it) before running the integration suite — the tests truncate the `ticket` table between cases, so point them at a scratch database.
 
 There are no frontend unit tests; the UI was instead verified in a real browser against the running API (create + validation + success feedback, status updates and live summary counts, filtering with the empty state, pagination, simulated API failures with retry, keyboard tab order and focus rings, and responsive layouts at desktop and mobile widths). Screenshots of the verified UI are in `design/`; the design system itself is documented in `frontend/DESIGN.md`.
 

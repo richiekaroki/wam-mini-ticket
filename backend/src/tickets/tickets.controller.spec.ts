@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import request from 'supertest';
 import { AppModule } from '../app.module';
+import { VALIDATION_PIPE_OPTIONS } from '../common/validation';
 import { Ticket } from './ticket.entity';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 
@@ -32,13 +33,7 @@ describe('Tickets API Integration Tests', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
+    app.useGlobalPipes(new ValidationPipe(VALIDATION_PIPE_OPTIONS));
     await app.init();
 
     // Must be resolved AFTER the app exists (it was at describe-level before)
@@ -178,6 +173,38 @@ describe('Tickets API Integration Tests', () => {
         .expect(200);
 
       expect((res.body as Ticket).priority).toBe('high');
+    });
+
+    it('should update the description and trim it', async () => {
+      const created = await repo.save(
+        repo.create({ title: 'Desc', description: 'old' }),
+      );
+      const res = await request(app.getHttpServer())
+        .patch(`/tickets/${created.id}`)
+        .send({ description: '  new details  ' })
+        .expect(200);
+
+      expect((res.body as Ticket).description).toBe('new details');
+    });
+
+    it('should clear the description when null is sent', async () => {
+      const created = await repo.save(
+        repo.create({ title: 'Desc', description: 'to clear' }),
+      );
+      const res = await request(app.getHttpServer())
+        .patch(`/tickets/${created.id}`)
+        .send({ description: null })
+        .expect(200);
+
+      expect((res.body as Ticket).description).toBeNull();
+    });
+
+    it('should reject a null title with 400 instead of crashing', async () => {
+      const created = await repo.save(repo.create({ title: 'Title' }));
+      await request(app.getHttpServer())
+        .patch(`/tickets/${created.id}`)
+        .send({ title: null })
+        .expect(400);
     });
   });
 

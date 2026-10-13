@@ -17,8 +17,7 @@ import { ListTicketsQueryDto } from './dto/list-tickets.query.dto';
 export class TicketsController {
   constructor(private service: TicketsService) {}
 
-  // Input validation is handled by the global ValidationPipe configured in
-  // main.ts (and in the integration tests), so it is not repeated here.
+  // Validation lives in the global ValidationPipe (main.ts), not per-route.
   @Post()
   create(@Body() dto: CreateTicketDto) {
     return this.service.create(dto);
@@ -29,7 +28,6 @@ export class TicketsController {
     return this.service.findAll(query);
   }
 
-  // Declared before the parameterized routes so it never matches as an :id
   @Get('stats')
   getStats() {
     return this.service.getStats();

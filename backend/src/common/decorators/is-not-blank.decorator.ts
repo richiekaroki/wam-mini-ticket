@@ -14,7 +14,7 @@ export function IsNotBlank(validationOptions?: ValidationOptions) {
           return value.trim().length > 0;
         },
         defaultMessage(): string {
-          return '${propertyName} must not be blank';
+          return `${propertyName} must not be blank`;
         },
       },
     });
